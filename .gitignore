@@ -1,0 +1,9 @@
+build/
+devel/
+bin/
+obj/
+*.so
+*.o
+*.engine
+*.pyc
+.catkin_tools/
