@@ -40,9 +40,11 @@ public:
         engine = runtime->deserializeCudaEngine(data, size);
         context = engine->createExecutionContext();
         delete[] data;
-
+	for (int i = 0; i < engine->getNbBindings(); ++i) {
+            ROS_INFO("Binding %d: %s", i, engine->getBindingName(i));
+        }
         inputIndex = engine->getBindingIndex("images");
-        outputIndex = engine->getBindingIndex("output");
+        outputIndex = engine->getBindingIndex("output0");
 
         cudaMalloc(&buffers[inputIndex], 3 * INPUT_H * INPUT_W * sizeof(float));
         cudaMalloc(&buffers[outputIndex], 1 * 25200 * 85 * sizeof(float)); // YOLOv5 output size

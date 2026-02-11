@@ -24,7 +24,11 @@ include_directories(
   /usr/local/cuda-10.2/include
   /usr/include/aarch64-linux-gnu
 )
-
+link_directories(
+  /usr/local/cuda-10.2/lib64
+  ${catkin_LIBRARY_DIRS}
+)
+catkin_package()
 ## Definisanje izvrsnog fajla
 add_executable(yolo_node src/yolo_node.cpp)
 
