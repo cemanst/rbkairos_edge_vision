@@ -1,0 +1,16 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ],
+    "files.associations": {
+        "*.h": "cpp",
+        "*.cpp": "cpp",
+        "vector": "cpp",
+        "string": "cpp",
+        "fstream": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
+}

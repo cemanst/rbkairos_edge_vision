@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
   sensor_msgs
-  vision_msgs
 )
 
 ## Sistemske zavisnosti (CUDA i OpenCV)
@@ -39,6 +38,6 @@ target_link_libraries(yolo_node
   ${OpenCV_LIBRARIES}
   ${CUDA_LIBRARIES}
   nvinfer
-  cudart
+/usr/local/cuda-10.2/lib64/libcudart.so)
 )
 
