@@ -87,18 +87,18 @@ public:
 
         for (int i = 0; i < 25200; ++i) {
             float obj_conf = cpu_output[i * 85 + 4];
-            if (obj_conf > 0.45) {
+            if (obj_conf > 0.35) {
                 float* scores = cpu_output + i * 85 + 5;
                 cv::Mat scores_mat(1, 80, CV_32FC1, scores);
                 double max_class_score;
                 cv::Point class_id;
                 cv::minMaxLoc(scores_mat, 0, &max_class_score, 0, &class_id);
 
-                if (max_class_score > 0.3) {
+                if (max_class_score > 0.25) {
                     float cx = cpu_output[i * 85 + 0];
-                    float cy = cpu_output[i * 85 + 1];
+                    float cy = cpu_output[i * 85 + 1]*0.75; //skalirano za razvucenu sliku 480/640!
                     float w = cpu_output[i * 85 + 2];
-                    float h = cpu_output[i * 85 + 3];
+                    float h = cpu_output[i * 85 + 3]*0.75;
                     boxes.push_back(cv::Rect(cx - w/2, cy - h/2, w, h));
                     confidences.push_back(obj_conf * max_class_score);
                     classIds.push_back(class_id.x);
@@ -108,7 +108,7 @@ public:
 
         // 5. NMS (Uklanjanje preklapanja)
         std::vector<int> indices;
-        cv::dnn::NMSBoxes(boxes, confidences, 0.45, 0.45, indices);
+        cv::dnn::NMSBoxes(boxes, confidences, 0.35, 0.45, indices);
 
         // 6. ROS Publish
         vision_msgs::Detection2DArray det_msg;
@@ -117,10 +117,22 @@ public:
 
         for (int idx : indices) {
             vision_msgs::Detection2D d;
-            d.bbox.center.x = boxes[idx].x + boxes[idx].width/2;
-            d.bbox.center.y = boxes[idx].y + boxes[idx].height/2;
+
+            // 1. Puni koordinate
+            d.bbox.center.x = boxes[idx].x + boxes[idx].width / 2;
+            d.bbox.center.y = boxes[idx].y + boxes[idx].height / 2;
             d.bbox.size_x = boxes[idx].width;
             d.bbox.size_y = boxes[idx].height;
+
+            // 2. Puni hipotezu (ID klase i Score)
+            vision_msgs::ObjectHypothesisWithPose hyp;
+            hyp.id = classIds[idx];
+            hyp.score = confidences[idx];
+
+            // 3. Ubaci hipotezu u detekciju
+            d.results.push_back(hyp);
+
+            // 4. TEK SAD ubaci kompletnu detekciju u niz poruke
             det_msg.detections.push_back(d);
         }
         det_pub.publish(det_msg);
