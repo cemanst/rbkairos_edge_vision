@@ -13,42 +13,42 @@ class EdgeVisualizer:
         self.bridge = CvBridge()
         self.latest_detections = None
         
-        # Subskripcija na sliku i detekcije
+        # subscribe to the image and the detections
         rospy.Subscriber("/camera/color/image_raw/compressed", CompressedImage, self.image_callback)
         rospy.Subscriber("/fruit_detections", Detection2DArray, self.det_callback)
         
-        rospy.loginfo("Visualizer online. Ready!")
+        rospy.loginfo("Visualizer online")
 
     def det_callback(self, msg):
         self.latest_detections = msg
 
     def image_callback(self, msg):
-        # Dekompresija slike
+        # image decompression
         np_arr = np.fromstring(msg.data, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
         if self.latest_detections:
             for det in self.latest_detections.detections:
-                # Koordinate (centar -> uglovi)
+                #bounding corners
                 w, h = int(det.bbox.size_x), int(det.bbox.size_y)
                 cx, cy = int(det.bbox.center.x), int(det.bbox.center.y)
                 x1, y1 = cx - w//2, cy - h//2
+                x2, y2 = cx + w//2, cy + h//2
 
-                # IZVLAČENJE ID-A: Uzimamo prvi rezultat iz liste 'results'
+                # ID extraction: first from the 'detections' list
                 if len(det.results) > 0:
                     class_id = det.results[0].id
                     score = det.results[0].score
-                    # Ispisujemo ID i procenu sigurnosti (npr. "ID: 47 (0.82)")
+                    # print ID and confidence score
                     label = "ID: {} ({:.2f})".format(class_id, score)
                 else:
                     label = "No ID"
 
-                # Crtanje
-                cv2.rectangle(frame, (x1, y1), (cx + w//2, cy + h//2), (0, 255, 0), 2)
+                # bounding box
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.putText(frame, label, (x1, y1-10), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-        # Otvaranje prozora
         cv2.imshow("RB-Kairos Edge Vision", frame)
         cv2.waitKey(1)
 
